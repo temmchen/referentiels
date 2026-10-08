@@ -1,0 +1,31 @@
+{
+ "v": 2,
+ "portal": "Référentiels",
+ "erstellt": "2026-10-08T04:44:57",
+ "build": 2,
+ "kdf": {
+  "typ": "PBKDF2-SHA256",
+  "iter": 600000,
+  "normalisierung": "nfc+trim+lower"
+ },
+ "principals": [
+  {
+   "id": "p0",
+   "salt": "IvhdX+OcIlkuhbh90XvFYw==",
+   "label": "Tom"
+  }
+ ],
+ "vaults": [
+  {
+   "id": "0a17add145e97535",
+   "manifest": "vaults/0a17add145e97535/m.enc",
+   "wraps": [
+    {
+     "iv": "9EbDkVS4Sq22CcuF",
+     "ct": "HbmidTvxMnjQemshixh85CN9obOOa3GOAhO8RENk6GYj0kpZkCtTY6JQ5zCa08PnYpbJTvT0QvXWhezxUq1uP6CvlOE5WdC/xPe5H8pUjzXuMcJWeAejAU+TAAIQi9P4QK/bADmzTA==",
+     "p": "p0"
+    }
+   ]
+  }
+ ]
+}

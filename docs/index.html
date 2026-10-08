@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Référentiels">
+<meta name="theme-color" content="#0F766E">
+<title>Référentiels</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{--bg:#0F1415;--surface:#161C1D;--surface-2:#1D2526;--surface-3:#283233;--border:#2A3435;--text:#E8EEEE;--text-2:#AEBBBC;--text-3:#7B8A8B;--accent:#2DD4BF;--accent-2:#5EEAD4;--accent-soft:#0F3B36;--accent-fg:#06201D;--warn:#F0A742;--warn-soft:#3A2A10;--danger:#F87171;--ok:#4ADE80;color-scheme:dark}
+@media (prefers-color-scheme: light){:root{--bg:#F3F5F6;--surface:#fff;--surface-2:#EEF2F3;--surface-3:#E2E8EA;--border:#DDE3E6;--text:#13201F;--text-2:#4A5A5B;--text-3:#7E8E8F;--accent:#0F766E;--accent-2:#115E59;--accent-soft:#D9F2EE;--accent-fg:#fff;--warn:#B45309;--warn-soft:#FDF1DC;--danger:#C62828;--ok:#15803D;color-scheme:light}}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+button,input{font:inherit;color:inherit}a{color:var(--accent)}
+.kopf{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border);padding:calc(env(safe-area-inset-top) + 10px) 14px 8px;display:flex;flex-direction:column;gap:8px}
+.zeile{display:flex;align-items:center;gap:8px}.logo{width:28px;height:28px;border-radius:8px;background:var(--accent);color:var(--accent-fg);font-weight:800;display:grid;place-items:center;flex:none}
+h1{font-size:17px;margin:0;flex:1}.icon{border:1px solid var(--border);background:var(--surface-2);border-radius:8px;padding:5px 9px;font-size:13px}
+.chips{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--border);background:var(--surface-2);border-radius:999px;padding:5px 12px;font-size:13px}.chip.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+input[type=search],input[type=text],input[type=password]{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);outline:none;font-size:16px}
+input:focus{border-color:var(--accent)}
+.liste{padding:8px 12px calc(env(safe-area-inset-bottom) + 30px)}
+.klasse{display:flex;align-items:center;gap:8px;font-weight:700;font-size:12px;letter-spacing:.3px;color:var(--text-2);text-transform:uppercase;padding:12px 2px 4px}.punkt{width:10px;height:10px;border-radius:50%;background:var(--text-3)}
+.modul{display:grid;grid-template-columns:1fr auto;gap:2px 8px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.modul .code{font-weight:700;font-size:16px}.modul .kz{font-size:12px;color:var(--text-2);white-space:nowrap;font-variant-numeric:tabular-nums}.modul .t{grid-column:1/-1;color:var(--text-3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{display:inline-block;border-radius:999px;padding:1px 7px;font-size:11px;background:var(--surface-3);color:var(--text-2);margin-left:6px;vertical-align:1px}.badge.s{background:var(--accent-soft);color:var(--accent-2)}.badge.w{background:var(--warn-soft);color:var(--warn)}
+.detail{position:fixed;inset:0;background:var(--bg);z-index:10;overflow:auto;-webkit-overflow-scrolling:touch;display:none}.detail.on{display:block}
+.detail .kopf{position:sticky;top:0}.detail .inhalt{padding:12px 14px calc(env(safe-area-inset-bottom) + 30px)}
+.karte{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.karte h2{font-size:12px;margin:0 0 8px;color:var(--text-2);text-transform:uppercase;letter-spacing:.3px;display:flex;gap:8px;align-items:center}.karte h2 .r{margin-left:auto;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3);font-size:11px}
+.mk .code{font-size:24px;font-weight:800}.mk .kl{color:var(--text-2);font-size:14px}.mk .ti{margin-top:4px;font-size:15px}.fakten{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:13px;color:var(--text-2)}.fakten b{color:var(--text)}
+.pdfs{display:flex;flex-direction:column;gap:8px;margin-top:10px}.pdf{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--surface-2)}.pdf .typ{font-weight:600;flex:1}.pdf .n{font-size:11px;color:var(--text-3)}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:9px;padding:7px 12px;font-size:14px;white-space:nowrap}.btn.p{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}.btn:disabled{opacity:.5}
+.k{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 0;border-top:1px solid var(--border)}.k:first-of-type{border-top:0}.k .nr{font-weight:800;color:var(--accent-2)}.k .pw{grid-column:2;font-size:12px;color:var(--text-2)}.balken{display:inline-block;width:70px;height:6px;background:var(--surface-3);border-radius:3px;overflow:hidden;vertical-align:middle;margin-left:6px}.balken i{display:block;height:100%;background:var(--accent)}
+details{margin-top:4px}summary{color:var(--text-3);font-size:12px}details ul{margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--text-2)}
+.ls{padding:8px 0;border-top:1px solid var(--border)}.ls:first-of-type{border-top:0}.ls b{font-size:15px}.ls .be{color:var(--text-2);font-size:13px;margin-top:2px}.ls .meta{font-size:12px;color:var(--text-3);margin-top:2px}
+.hinweis{color:var(--text-3);font-size:12px;margin-top:8px}.vorlage{background:var(--accent-soft);color:var(--accent-2);border-radius:10px;padding:8px 12px;font-size:13px;margin-bottom:10px}
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}#login form{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px}
+#login h1{font-size:22px}#login .fehler{color:var(--danger);font-size:13px;min-height:1.2em}#login .note{color:var(--text-3);font-size:12px}
+.viewer{position:fixed;inset:0;background:#222;z-index:20;display:none;flex-direction:column}.viewer.on{display:flex}.viewer .leiste{display:flex;gap:8px;align-items:center;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:#111;color:#eee;font-size:14px}.viewer .leiste .t{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.viewer .seiten{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:8px 0 calc(env(safe-area-inset-bottom) + 20px)}.viewer canvas{display:block;margin:0 auto 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:100%}
+.viewer .st{color:#aaa;text-align:center;font-size:13px;padding:20px}
+.meldung{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);background:var(--surface-3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;z-index:30;display:none}.meldung.on{display:block}
+mark{background:#6B5300;color:#FFF3C4;border-radius:3px}
+.menue{position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 48px);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;flex-direction:column;min-width:220px;z-index:15}.menue.on{display:flex}.menue button{text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:11px 14px;font-size:15px}.menue button:last-child{border-bottom:0}
+</style>
+</head>
+<body>
+<div id="login">
+  <form id="form" autocomplete="on">
+    <h1>Référentiels</h1>
+    <div class="note">Référentiels de formation · d'évaluation · Programme — je Schuljahr, Klasse, Modul. Verschlüsselt, nur für dich.</div>
+    <input id="zugang" type="text" placeholder="Zugang (Name)" autocapitalize="off" autocorrect="off" autocomplete="username" value="Tom">
+    <input id="passwort" type="password" placeholder="Passwort" autocapitalize="off" autocorrect="off" autocomplete="current-password">
+    <button class="btn p" type="submit">Anmelden</button>
+    <div class="fehler" id="fehler"></div>
+    <div class="note" id="info"></div>
+  </form>
+</div>
+<div id="app" hidden>
+  <div class="kopf">
+    <div class="zeile"><span class="logo">R</span><h1>Référentiels</h1><button class="icon" id="btn-menue" aria-label="Menü">⋯</button></div>
+    <div class="chips" id="jahre"></div>
+    <input id="suche" type="search" placeholder="Modul, Kompetenz, Inhalt …" autocapitalize="off" autocorrect="off">
+  </div>
+  <div class="menue" id="menue">
+    <button id="m-offline">Für unterwegs laden (alle PDFs)</button>
+    <button id="m-neu">Neu laden</button>
+    <button id="m-abmelden">Abmelden</button>
+  </div>
+  <div class="liste" id="liste"></div>
+  <div class="detail" id="detail"><div class="kopf"><div class="zeile"><button class="icon" id="btn-zurueck">‹ Zurück</button><h1 id="d-titel" style="font-size:15px"></h1></div></div><div class="inhalt" id="d-inhalt"></div></div>
+  <div class="viewer" id="viewer"><div class="leiste"><button class="icon" id="v-zu">Schließen</button><span class="t" id="v-titel"></span><button class="icon" id="v-teilen">Teilen</button></div><div class="seiten" id="v-seiten"></div></div>
+</div>
+<div class="meldung" id="meldung"></div>
+<script type="module">
+/* Référentiels Mobil – Oberfläche. Krypto wie build.py: Passwort NFC+trim+lower → PBKDF2-SHA256 (iter aus index.json)
+   → KEK → entwickelt den Tresorschlüssel K → Manifest und PDFs = 12-B-Nonce || AES-256-GCM. Sitzung (K) in localStorage
+   rm_sitzung; nur Ansicht. PDFs: pdf.js auf Canvas (DPR ≤ 2, ≤ 4 MPx je Seite), Teilen per navigator.share. */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const TYP = {refeval:"Référentiel d'évaluation", pgmfor:'Référentiel de formation', prog:'Programme'};
+const b64zu = s => { const b = atob(s), o = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) o[i] = b.charCodeAt(i); return o; };
+const normalisiere = pw => String(pw || '').normalize('NFC').trim().toLowerCase();
+const frisch = url => url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+async function leiteKek(pw, saltB64, iter) {
+  const m = await crypto.subtle.importKey('raw', new TextEncoder().encode(normalisiere(pw)), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:b64zu(saltB64), iterations:iter, hash:'SHA-256'}, m, 256);
+  return crypto.subtle.importKey('raw', bits, {name:'AES-GCM'}, false, ['decrypt']);
+}
+async function entschluesseleJSON(key, ivB64, ctB64) { const k = await crypto.subtle.decrypt({name:'AES-GCM', iv:b64zu(ivB64)}, key, b64zu(ctB64)); return JSON.parse(new TextDecoder().decode(k)); }
+const importK = kB64 => crypto.subtle.importKey('raw', b64zu(kB64), {name:'AES-GCM'}, false, ['decrypt']);
+async function entschluesseleBlock(key, puffer) { const b = new Uint8Array(puffer); if (b.length < 13) throw new Error('Datei beschädigt'); return crypto.subtle.decrypt({name:'AES-GCM', iv:b.slice(0, 12)}, key, b.slice(12)); }
+
+const st = { idx:null, kB64:null, key:null, vid:null, man:null, jahr:null, q:'', label:'' };
+const merk = (k, v) => { try { localStorage.setItem('rm_' + k, v); } catch (e) {} };
+const lies = k => { try { return localStorage.getItem('rm_' + k); } catch (e) { return null; } };
+const meld = (t, ms = 3500) => { const m = $('#meldung'); m.textContent = t; m.classList.add('on'); clearTimeout(meld.t); meld.t = setTimeout(() => m.classList.remove('on'), ms); };
+
+async function ladeIndex() { const r = await fetch(frisch('vaults/index.json'), {cache:'no-store'}); if (!r.ok) throw new Error('index.json fehlt (' + r.status + ')'); return r.json(); }
+async function ladeManifest() {
+  const v = st.idx.vaults[0]; st.vid = v.id;
+  const r = await fetch(frisch(v.manifest), {cache:'no-store'}); if (!r.ok) throw new Error('Manifest fehlt');
+  const klar = await entschluesseleBlock(st.key, await r.arrayBuffer());
+  st.man = JSON.parse(new TextDecoder().decode(klar));
+}
+async function anmelden(zugang, pw) {
+  const idx = st.idx || (st.idx = await ladeIndex());
+  const p = idx.principals.find(x => (x.label || '').normalize('NFC').toLowerCase() === normalisiere(zugang)) || idx.principals[0];
+  if (!p) throw new Error('Kein Zugang eingerichtet.');
+  const kek = await leiteKek(pw, p.salt, idx.kdf.iter);
+  const v = idx.vaults[0]; const w = v.wraps.find(x => x.p === p.id);
+  if (!w) throw new Error('Für diesen Zugang gibt es keinen Tresor.');
+  let n; try { n = await entschluesseleJSON(kek, w.iv, w.ct); } catch (e) { throw new Error('Passwort oder Zugang stimmt nicht.'); }
+  st.kB64 = n.k; st.label = n.label || zugang; st.key = await importK(n.k);
+  merk('sitzung', JSON.stringify({k:n.k, label:st.label, vid:v.id}));
+}
+async function sitzungWiederherstellen() {
+  const s = lies('sitzung'); if (!s) return false;
+  try { const d = JSON.parse(s); st.kB64 = d.k; st.label = d.label; st.key = await importK(d.k); st.idx = await ladeIndex(); await ladeManifest(); return true; }
+  catch (e) { return false; }
+}
+function abmelden() { try { localStorage.removeItem('rm_sitzung'); } catch (e) {} location.reload(); }
+
+// ------------------------------------------------------------ Anzeige
+function jahrDaten() { return (st.man.jahre || []).find(j => j.jahr === st.jahr) || {klassen:[]}; }
+function passt(m, q) {
+  if (!q) return true; const w = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const heu = [m.modul, m.titel, (m.kompetenzen || []).map(k => k.text + ' ' + (k.indikatoren || []).join(' ')).join(' '), (m.lernsituationen || []).map(l => l.titel + ' ' + l.beschreibung + ' ' + (l.inhalte || []).join(' ')).join(' '), (m.lerneinheiten || []).map(l => l.titel + ' ' + (l.lernziele || []).join(' ')).join(' ')].join(' ').toLowerCase();
+  return w.every(x => heu.includes(x));
+}
+function mark(t) { const q = st.q.trim(); if (!q) return esc(t); const w = q.split(/\s+/).filter(Boolean).map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')); return esc(t).replace(new RegExp('(' + w.join('|') + ')', 'gi'), '<mark>$1</mark>'); }
+function zeichneJahre() {
+  $('#jahre').innerHTML = (st.man.jahre || []).map(j => `<button class="chip${j.jahr === st.jahr ? ' on' : ''}" data-j="${esc(j.jahr)}">${esc(j.jahr)}</button>`).join('');
+  $('#jahre').querySelectorAll('.chip').forEach(b => b.onclick = () => { st.jahr = b.dataset.j; merk('jahr', st.jahr); zeichneJahre(); zeichneListe(); });
+}
+function kennzahl(m) { if (m.vorlage) return `wie ${esc(m.vorlage.vorlage_klasse)} ${esc(m.vorlage.vorlage_modul)}`; if (m.kompetenzen && m.kompetenzen.length) return `${m.anzahl} K · ${m.punkte} P`; if (m.lerneinheiten && m.lerneinheiten.length) return `${m.lerneinheiten.length} LE`; return m.dateien && m.dateien.length ? 'PDF' : 'kein PDF'; }
+function zeichneListe() {
+  const j = jahrDaten(); const q = st.q.trim(); let h = '';
+  for (const k of j.klassen) {
+    const mod = k.module.filter(m => passt(m, q)); if (!mod.length) continue;
+    h += `<div class="klasse"><span class="punkt" style="${k.farbe ? 'background:' + esc(k.farbe) : ''}"></span>${esc(k.klasse)}${k.rattrapage ? '<span class="badge w">Rattrapage</span>' : ''}</div>`;
+    for (const m of mod) h += `<div class="modul" data-k="${esc(k.klasse)}" data-m="${esc(m.modul)}"><span class="code">${mark(m.modul)}${m.zeitraum ? `<span class="badge s">${esc(m.zeitraum)}</span>` : ''}</span><span class="kz">${kennzahl(m)}</span><span class="t">${mark(m.titel || (m.vorlage ? m.vorlage.titel : ''))}</span></div>`;
+  }
+  $('#liste').innerHTML = h || '<div class="hinweis" style="padding:20px;text-align:center">Nichts gefunden.</div>';
+  $('#liste').querySelectorAll('.modul').forEach(el => el.onclick = () => zeigeDetail(el.dataset.k, el.dataset.m));
+}
+function finde(klasse, modul, jahr) { const j = jahr ? (st.man.jahre.find(x => x.jahr === jahr) || {klassen:[]}) : jahrDaten(); for (const k of j.klassen) for (const m of k.module) if (k.klasse === klasse && m.modul === modul) return {k, m, j}; return null; }
+function zeigeDetail(klasse, modul) {
+  const t = finde(klasse, modul); if (!t) return; let {k, m, j} = t; let hinweis = '';
+  if (m.vorlage) { const v = finde(m.vorlage.vorlage_klasse, m.vorlage.vorlage_modul); hinweis = `<div class="vorlage">Rattrapage – Kompetenzen wie <b>${esc(m.vorlage.vorlage_klasse)} ${esc(m.vorlage.vorlage_modul)}</b>${m.vorlage.titel ? '<br>' + esc(m.vorlage.titel) : ''}</div>`; if (v) m = Object.assign({}, v.m, {modul:m.modul, vorlage:m.vorlage, zeitraum:m.zeitraum}); }
+  $('#d-titel').textContent = `${t.m.modul} · ${k.klasse} · ${j.jahr}`;
+  const fakten = [m.stunden ? `<span><b>${m.stunden}</b> Std./Woche</span>` : '', m.semester ? `<span>Semester <b>${m.semester}</b></span>` : '', m.zeitraum ? `<span>Zeitraum <b>${esc(m.zeitraum)}</b></span>` : '', m.sprache ? `<span><b>${esc(m.sprache)}</b></span>` : '', m.kompetenzen && m.kompetenzen.length ? `<span><b>${m.anzahl}</b> Kompetenzen · <b>${m.punkte}</b> P</span>` : ''].filter(Boolean).join('');
+  const pdfs = (m.dateien || []).map((d, i) => `<div class="pdf"><div><div class="typ">${esc(TYP[d.typ] || d.typ)}</div><div class="n">${esc(d.name)} · ${(d.groesse / 1048576).toFixed(1)} MB${d.hinweis ? ' · ' + esc(d.hinweis) : ''}</div></div>${d.fid ? `<button class="btn p" data-fid="${esc(d.fid)}" data-name="${esc(d.name)}">Öffnen</button>` : ''}</div>`).join('');
+  const K = m.kompetenzen || [];
+  const komp = K.length ? `<div class="karte"><h2>Kompetenzen <span class="badge">${K.length}</span><span class="r">${K.reduce((a, x) => a + (x.punkte || 0), 0)} Punkte</span></h2>${K.map(x => `<div class="k"><span class="nr">${esc(x.nr)}</span><span>${mark(x.kurz || x.text)}</span><span class="pw">${x.prozent != null ? x.prozent + ' %' : ''} · ${x.punkte != null ? x.punkte + ' P' : ''}<span class="balken"><i style="width:${x.prozent || 0}%"></i></span>${x.indikatoren && x.indikatoren.length ? `<details><summary>${x.indikatoren.length} Indikatoren</summary><ul>${x.indikatoren.map(i => `<li>${mark(i)}</li>`).join('')}</ul></details>` : ''}</span></div>`).join('')}</div>` : '';
+  const L = m.lernsituationen || []; const o = m.organisation || {};
+  const ls = L.length ? `<div class="karte"><h2>Lernsituationen <span class="badge">${L.length}</span><span class="r">${[o.wochen ? o.wochen + ' Wo' : '', o.stunden ? o.stunden + ' h' : ''].filter(Boolean).join(' · ')}</span></h2>${L.map(l => `<div class="ls"><b>${l.nr}. ${mark(l.titel)}</b><div class="be">${mark(l.beschreibung)}</div><div class="meta">${l.richtzeit != null ? l.richtzeit + ' h' : ''}${l.kompetenzen ? ' · ' + esc(l.kompetenzen) : ''}</div>${l.inhalte && l.inhalte.length ? `<details><summary>${l.inhalte.length} Inhalte</summary><ul>${l.inhalte.map(i => `<li>${mark(i)}</li>`).join('')}</ul></details>` : ''}</div>`).join('')}</div>` : '';
+  const E = m.lerneinheiten || [];
+  const le = E.length ? `<div class="karte"><h2>Lerneinheiten <span class="badge">${E.length}</span></h2>${E.map(l => `<div class="ls"><b>${l.nr}. ${mark(l.titel)}</b>${l.lernziele && l.lernziele.length ? `<ul style="margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--text-2)">${l.lernziele.map(z => `<li>${mark(z)}</li>`).join('')}</ul>` : ''}</div>`).join('')}</div>` : '';
+  $('#d-inhalt').innerHTML = hinweis + `<div class="karte mk"><div class="code">${esc(t.m.modul)}</div><div class="kl">${esc(k.klasse)} · ${esc(j.jahr)}</div><div class="ti">${mark(m.titel || '')}</div><div class="fakten">${fakten}</div><div class="pdfs">${pdfs || '<div class="hinweis">Kein PDF abgelegt.</div>'}</div></div>` + komp + ls + le;
+  $('#d-inhalt').querySelectorAll('[data-fid]').forEach(b => b.onclick = () => oeffnePdf(b.dataset.fid, b.dataset.name));
+  $('#detail').classList.add('on'); $('#detail').scrollTop = 0; history.pushState({d:1}, '');
+}
+function detailZu() { $('#detail').classList.remove('on'); }
+
+// ------------------------------------------------------------ PDFs
+const blobs = new Map();
+async function holeBlob(fid, name) {
+  if (blobs.has(fid)) return blobs.get(fid);
+  const r = await fetch(`vaults/${st.vid}/f/${fid}.enc`); if (!r.ok) throw new Error('Datei nicht gefunden (' + r.status + ')');
+  const klar = await entschluesseleBlock(st.key, await r.arrayBuffer());
+  const b = new Blob([klar], {type:'application/pdf'}); blobs.set(fid, b); return b;
+}
+let pdfjs = null, aktuell = null;
+async function oeffnePdf(fid, name) {
+  const v = $('#viewer'); v.classList.add('on'); $('#v-titel').textContent = name; $('#v-seiten').innerHTML = '<div class="st">Wird entschlüsselt …</div>';
+  try {
+    const blob = await holeBlob(fid, name); aktuell = {blob, name};
+    if (!pdfjs) { pdfjs = await import('./lib/pdf.min.mjs'); pdfjs.GlobalWorkerOptions.workerSrc = './lib/pdf.worker.min.mjs'; }
+    const doc = await pdfjs.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
+    $('#v-seiten').innerHTML = '';
+    const breite = Math.min(window.innerWidth - 16, 900); const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    for (let n = 1; n <= doc.numPages; n++) {
+      const seite = await doc.getPage(n); const vp0 = seite.getViewport({scale:1});
+      let scale = breite / vp0.width; let px = dpr; if (vp0.width * scale * px * vp0.height * scale * px > 4e6) px = Math.sqrt(4e6 / (vp0.width * scale * vp0.height * scale));
+      const vp = seite.getViewport({scale:scale * px}); const c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height); c.style.width = Math.floor(vp.width / px) + 'px';
+      $('#v-seiten').appendChild(c); await seite.render({canvasContext:c.getContext('2d'), viewport:vp}).promise;
+    }
+  } catch (e) { $('#v-seiten').innerHTML = `<div class="st">Konnte nicht angezeigt werden: ${esc(e.message)}</div>`; }
+}
+$('#v-zu').onclick = () => { $('#viewer').classList.remove('on'); $('#v-seiten').innerHTML = ''; };
+$('#v-teilen').onclick = async () => {
+  if (!aktuell) return; const f = new File([aktuell.blob], aktuell.name, {type:'application/pdf'});
+  if (navigator.canShare && navigator.canShare({files:[f]})) { try { await navigator.share({files:[f], title:aktuell.name}); } catch (e) {} }
+  else { const u = URL.createObjectURL(aktuell.blob); window.open(u, '_blank'); }
+};
+
+// ------------------------------------------------------------ Offline, Menü, Start
+async function fuerUnterwegs() {
+  const alle = []; for (const j of st.man.jahre) for (const k of j.klassen) for (const m of k.module) for (const d of m.dateien || []) if (d.fid) alle.push(d.fid);
+  meld(`Lade ${alle.length} PDFs für unterwegs …`, 60000); let n = 0;
+  const cache = await caches.open('rm-dateien');
+  const lauf = async () => { let fid; while ((fid = alle.shift())) { const u = `vaults/${st.vid}/f/${fid}.enc`; if (!(await cache.match(u))) { const r = await fetch(u); if (r.ok) await cache.put(u, r); } n++; } };
+  await Promise.all([lauf(), lauf(), lauf()]);
+  const keys = await cache.keys(); const gueltig = new Set(); for (const j of st.man.jahre) for (const k of j.klassen) for (const m of k.module) for (const d of m.dateien || []) if (d.fid) gueltig.add(`vaults/${st.vid}/f/${d.fid}.enc`);
+  for (const req of keys) { const rel = new URL(req.url).pathname.split('/').slice(-4).join('/'); if (!gueltig.has(rel)) await cache.delete(req); }
+  meld(`${n} PDFs offline verfügbar.`);
+}
+$('#btn-menue').onclick = e => { e.stopPropagation(); $('#menue').classList.toggle('on'); };
+document.addEventListener('click', () => $('#menue').classList.remove('on'));
+$('#m-offline').onclick = fuerUnterwegs; $('#m-neu').onclick = () => location.reload(); $('#m-abmelden').onclick = abmelden;
+$('#btn-zurueck').onclick = () => history.back();
+window.addEventListener('popstate', () => { if ($('#viewer').classList.contains('on')) { $('#v-zu').click(); history.pushState({d:1}, ''); } else detailZu(); });
+$('#suche').addEventListener('input', e => { st.q = e.target.value; zeichneListe(); });
+
+async function start() {
+  if (await sitzungWiederherstellen()) { starteApp(); return; }
+  $('#login').style.display = 'flex';
+  $('#form').onsubmit = async e => {
+    e.preventDefault(); $('#fehler').textContent = ''; $('#info').textContent = 'Prüft … (einige Sekunden)';
+    try { await anmelden($('#zugang').value, $('#passwort').value); await ladeManifest(); starteApp(); }
+    catch (err) { $('#fehler').textContent = err.message; $('#info').textContent = ''; }
+  };
+}
+function starteApp() {
+  $('#login').style.display = 'none'; $('#app').hidden = false;
+  const jahre = st.man.jahre.map(j => j.jahr); st.jahr = jahre.includes(lies('jahr')) ? lies('jahr') : jahre[0];
+  zeichneJahre(); zeichneListe();
+  meld(`${st.man.statistik.module} Module · ${st.man.statistik.dateien} PDFs · Stand ${st.man.erstellt.replace('T', ' ').slice(0, 16)}`);
+}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+start().catch(e => { $('#login').style.display = 'flex'; $('#fehler').textContent = e.message; });
+</script>
+</body>
+</html>
