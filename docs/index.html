@@ -39,10 +39,11 @@ input:focus{border-color:var(--accent)}
 details{margin-top:4px}summary{color:var(--text-3);font-size:12px}details ul{margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--text-2)}
 .ls{padding:8px 0;border-top:1px solid var(--border)}.ls:first-of-type{border-top:0}.ls b{font-size:15px}.ls .be{color:var(--text-2);font-size:13px;margin-top:2px}.ls .meta{font-size:12px;color:var(--text-3);margin-top:2px}
 .hinweis{color:var(--text-3);font-size:12px;margin-top:8px}.vorlage{background:var(--accent-soft);color:var(--accent-2);border-radius:10px;padding:8px 12px;font-size:13px;margin-bottom:10px}
-#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}#login form{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px}
+#login{min-height:100vh;display:none;align-items:center;justify-content:center;padding:24px}#login form{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px}
+#lade{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--text-2);font-size:14px}#lade-knoepfe{margin-top:14px;display:flex;gap:8px;justify-content:center}#lade-knoepfe[hidden]{display:none}.seite{margin:0 auto 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:100%}.viewer .seite canvas{display:block;width:100%;height:100%;margin:0;box-shadow:none;max-width:none}
 #login h1{font-size:22px}#login .fehler{color:var(--danger);font-size:13px;min-height:1.2em}#login .note{color:var(--text-3);font-size:12px}
 .viewer{position:fixed;inset:0;background:#222;z-index:20;display:none;flex-direction:column}.viewer.on{display:flex}.viewer .leiste{display:flex;gap:8px;align-items:center;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;background:#111;color:#eee;font-size:14px}.viewer .leiste .t{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.viewer .seiten{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:8px 0 calc(env(safe-area-inset-bottom) + 20px)}.viewer canvas{display:block;margin:0 auto 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:100%}
+.viewer .seiten{flex:1;position:relative;overflow:auto;-webkit-overflow-scrolling:touch;padding:8px 0 calc(env(safe-area-inset-bottom) + 20px)}.viewer canvas{display:block;margin:0 auto 10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5);max-width:100%}
 .viewer .st{color:#aaa;text-align:center;font-size:13px;padding:20px}
 .meldung{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);background:var(--surface-3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;z-index:30;display:none}.meldung.on{display:block}
 mark{background:#6B5300;color:#FFF3C4;border-radius:3px}
@@ -50,6 +51,7 @@ mark{background:#6B5300;color:#FFF3C4;border-radius:3px}
 </style>
 </head>
 <body>
+<div id="lade"><div><div class="logo" style="margin:0 auto 12px">R</div><div id="lade-text">Référentiels wird geladen …</div><div id="lade-knoepfe" hidden><button class="btn p" id="lade-neu" type="button">Neu laden</button> <button class="btn" id="lade-ab" type="button">Abmelden</button></div></div></div>
 <div id="login">
   <form id="form" autocomplete="on">
     <h1>Référentiels</h1>
@@ -101,11 +103,26 @@ const merk = (k, v) => { try { localStorage.setItem('rm_' + k, v); } catch (e) {
 const lies = k => { try { return localStorage.getItem('rm_' + k); } catch (e) { return null; } };
 const meld = (t, ms = 3500) => { const m = $('#meldung'); m.textContent = t; m.classList.add('on'); clearTimeout(meld.t); meld.t = setTimeout(() => m.classList.remove('on'), ms); };
 
-async function ladeIndex() { const r = await fetch(frisch('vaults/index.json'), {cache:'no-store'}); if (!r.ok) throw new Error('index.json fehlt (' + r.status + ')'); return r.json(); }
+class NetzFehler extends Error {}
+// Index und Manifest: Netz mit Zeitlimit, sonst die zuletzt geladene (verschlüsselte) Fassung aus dem Cache.
+// Ohne Netz oder bei hängender Verbindung (iPhone im Funkloch) startet die App so trotzdem.
+async function holeDatei(pfad) {
+  const ab = new AbortController(); const t = setTimeout(() => ab.abort(), 8000);
+  try {
+    const r = await fetch(frisch(pfad), {cache:'no-store', signal:ab.signal});
+    if (!r.ok) throw new Error(pfad + ' fehlt (' + r.status + ')');
+    const d = await r.arrayBuffer();
+    try { const c = await caches.open('rm-daten'); await c.put(pfad, new Response(d)); } catch (e) {}
+    return d;
+  } catch (e) {
+    try { const c = await caches.open('rm-daten'); const r = await c.match(pfad); if (r) return r.arrayBuffer(); } catch (e2) {}
+    throw new NetzFehler('Keine Verbindung zum Server – und noch nichts für unterwegs gespeichert.');
+  } finally { clearTimeout(t); }
+}
+async function ladeIndex() { return JSON.parse(new TextDecoder().decode(await holeDatei('vaults/index.json'))); }
 async function ladeManifest() {
   const v = st.idx.vaults[0]; st.vid = v.id;
-  const r = await fetch(frisch(v.manifest), {cache:'no-store'}); if (!r.ok) throw new Error('Manifest fehlt');
-  const klar = await entschluesseleBlock(st.key, await r.arrayBuffer());
+  const klar = await entschluesseleBlock(st.key, await holeDatei(v.manifest));
   st.man = JSON.parse(new TextDecoder().decode(klar));
 }
 async function anmelden(zugang, pw) {
@@ -121,8 +138,10 @@ async function anmelden(zugang, pw) {
 }
 async function sitzungWiederherstellen() {
   const s = lies('sitzung'); if (!s) return false;
-  try { const d = JSON.parse(s); st.kB64 = d.k; st.label = d.label; st.key = await importK(d.k); st.idx = await ladeIndex(); await ladeManifest(); return true; }
-  catch (e) { return false; }
+  let d; try { d = JSON.parse(s); st.kB64 = d.k; st.label = d.label; st.key = await importK(d.k); } catch (e) { return false; }
+  st.idx = await ladeIndex();            // NetzFehler geht an start(): Sitzung bleibt, kein Passwort nötig
+  try { await ladeManifest(); return true; }
+  catch (e) { if (e instanceof NetzFehler) throw e; try { localStorage.removeItem('rm_sitzung'); } catch (e2) {} return false; }
 }
 function abmelden() { try { localStorage.removeItem('rm_sitzung'); } catch (e) {} location.reload(); }
 
@@ -169,31 +188,67 @@ function zeigeDetail(klasse, modul) {
 function detailZu() { $('#detail').classList.remove('on'); }
 
 // ------------------------------------------------------------ PDFs
-const blobs = new Map();
+const blobs = new Map();   // höchstens 2 entschlüsselte PDFs im Speicher (iPhone)
 async function holeBlob(fid, name) {
   if (blobs.has(fid)) return blobs.get(fid);
+  while (blobs.size >= 2) blobs.delete(blobs.keys().next().value);
   const r = await fetch(`vaults/${st.vid}/f/${fid}.enc`); if (!r.ok) throw new Error('Datei nicht gefunden (' + r.status + ')');
   const klar = await entschluesseleBlock(st.key, await r.arrayBuffer());
   const b = new Blob([klar], {type:'application/pdf'}); blobs.set(fid, b); return b;
 }
-let pdfjs = null, aktuell = null;
+let pdfjs = null, aktuell = null, beobachter = null, pdfDoc = null, pdfLauf = 0;
+// Speicher schonen (iPhone: zu viele große Canvas → schwarze Seiten, Absturz der Web-App): Seiten werden erst
+// gezeichnet, wenn sie in die Nähe des sichtbaren Bereichs kommen (≤ 2,5 MPx), und wieder freigegeben, wenn sie weit weg sind.
+function canvasFrei(c) { c.width = 0; c.height = 0; c.remove(); }
+function viewerLeeren() {
+  pdfLauf++;
+  if (beobachter) { beobachter.disconnect(); beobachter = null; }
+  $('#v-seiten').querySelectorAll('canvas').forEach(canvasFrei);
+  $('#v-seiten').innerHTML = '';
+  if (pdfDoc) { try { pdfDoc.destroy(); } catch (e) {} pdfDoc = null; }
+}
+async function zeichneSeite(box) {
+  if (box.dataset.zustand !== 'leer' || !pdfDoc) return;
+  box.dataset.zustand = 'laeuft'; const lauf = pdfLauf;
+  try {
+    const seite = await pdfDoc.getPage(+box.dataset.n); if (lauf !== pdfLauf) return;
+    const breite = box.clientWidth || Math.min(window.innerWidth - 16, 900); const vp0 = seite.getViewport({scale:1});
+    const scale = breite / vp0.width; let px = Math.min(window.devicePixelRatio || 1, 2);
+    if (vp0.width * scale * px * vp0.height * scale * px > 2.5e6) px = Math.sqrt(2.5e6 / (vp0.width * scale * vp0.height * scale));
+    const vp = seite.getViewport({scale:scale * px}); const c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+    await seite.render({canvasContext:c.getContext('2d'), viewport:vp}).promise;
+    if (lauf !== pdfLauf || box.dataset.zustand !== 'laeuft') { canvasFrei(c); return; }
+    box.querySelectorAll('canvas').forEach(canvasFrei); box.appendChild(c); box.dataset.zustand = 'fertig';
+  } catch (e) { if (box.dataset.zustand === 'laeuft') box.dataset.zustand = 'leer'; }
+}
+function seiteFrei(box) { box.querySelectorAll('canvas').forEach(canvasFrei); box.dataset.zustand = 'leer'; }
+function beobachten() {
+  if (beobachter) beobachter.disconnect();
+  beobachter = new IntersectionObserver(eintraege => { for (const e of eintraege) { if (e.isIntersecting) zeichneSeite(e.target); else seiteFrei(e.target); } }, {root:$('#v-seiten'), rootMargin:'1200px 0px'});
+  $('#v-seiten').querySelectorAll('.seite').forEach(b => beobachter.observe(b));
+}
 async function oeffnePdf(fid, name) {
+  viewerLeeren(); const lauf = pdfLauf;
   const v = $('#viewer'); v.classList.add('on'); $('#v-titel').textContent = name; $('#v-seiten').innerHTML = '<div class="st">Wird entschlüsselt …</div>';
   try {
     const blob = await holeBlob(fid, name); aktuell = {blob, name};
     if (!pdfjs) { pdfjs = await import('./lib/pdf.min.mjs'); pdfjs.GlobalWorkerOptions.workerSrc = './lib/pdf.worker.min.mjs'; }
     const doc = await pdfjs.getDocument({data:new Uint8Array(await blob.arrayBuffer())}).promise;
-    $('#v-seiten').innerHTML = '';
-    const breite = Math.min(window.innerWidth - 16, 900); const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (lauf !== pdfLauf) { doc.destroy(); return; }
+    pdfDoc = doc; $('#v-seiten').innerHTML = '';
+    const breite = Math.min(window.innerWidth - 16, 900);
+    const erste = await doc.getPage(1); const vp1 = erste.getViewport({scale:1});
     for (let n = 1; n <= doc.numPages; n++) {
-      const seite = await doc.getPage(n); const vp0 = seite.getViewport({scale:1});
-      let scale = breite / vp0.width; let px = dpr; if (vp0.width * scale * px * vp0.height * scale * px > 4e6) px = Math.sqrt(4e6 / (vp0.width * scale * vp0.height * scale));
-      const vp = seite.getViewport({scale:scale * px}); const c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height); c.style.width = Math.floor(vp.width / px) + 'px';
-      $('#v-seiten').appendChild(c); await seite.render({canvasContext:c.getContext('2d'), viewport:vp}).promise;
+      const box = document.createElement('div'); box.className = 'seite'; box.dataset.n = n; box.dataset.zustand = 'leer';
+      box.style.width = breite + 'px'; box.style.height = Math.round(breite * vp1.height / vp1.width) + 'px';
+      $('#v-seiten').appendChild(box);
     }
+    beobachten();
   } catch (e) { $('#v-seiten').innerHTML = `<div class="st">Konnte nicht angezeigt werden: ${esc(e.message)}</div>`; }
 }
-$('#v-zu').onclick = () => { $('#viewer').classList.remove('on'); $('#v-seiten').innerHTML = ''; };
+$('#v-zu').onclick = () => { $('#viewer').classList.remove('on'); viewerLeeren(); };
+// Zurück aus dem Hintergrund: iOS verwirft Canvas-Inhalte → sichtbare Seiten neu zeichnen statt schwarz zu bleiben.
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && pdfDoc && $('#viewer').classList.contains('on')) { $('#v-seiten').querySelectorAll('.seite').forEach(seiteFrei); beobachten(); } });
 $('#v-teilen').onclick = async () => {
   if (!aktuell) return; const f = new File([aktuell.blob], aktuell.name, {type:'application/pdf'});
   if (navigator.canShare && navigator.canShare({files:[f]})) { try { await navigator.share({files:[f], title:aktuell.name}); } catch (e) {} }
@@ -218,23 +273,34 @@ $('#btn-zurueck').onclick = () => history.back();
 window.addEventListener('popstate', () => { if ($('#viewer').classList.contains('on')) { $('#v-zu').click(); history.pushState({d:1}, ''); } else detailZu(); });
 $('#suche').addEventListener('input', e => { st.q = e.target.value; zeichneListe(); });
 
+function zeigeLogin(meldung) {
+  $('#lade').style.display = 'none'; $('#login').style.display = 'flex';
+  if (meldung) $('#fehler').textContent = meldung;
+}
+$('#form').onsubmit = async e => {
+  e.preventDefault(); $('#fehler').textContent = ''; $('#info').textContent = 'Prüft … (einige Sekunden)';
+  try { await anmelden($('#zugang').value, $('#passwort').value); await ladeManifest(); starteApp(); }
+  catch (err) { $('#fehler').textContent = err.message; $('#info').textContent = ''; }
+};
+$('#lade-neu').onclick = () => location.reload();
+$('#lade-ab').onclick = abmelden;
+function ladeProblem(text) { $('#lade-text').textContent = text; $('#lade-knoepfe').hidden = false; }
 async function start() {
-  if (await sitzungWiederherstellen()) { starteApp(); return; }
-  $('#login').style.display = 'flex';
-  $('#form').onsubmit = async e => {
-    e.preventDefault(); $('#fehler').textContent = ''; $('#info').textContent = 'Prüft … (einige Sekunden)';
-    try { await anmelden($('#zugang').value, $('#passwort').value); await ladeManifest(); starteApp(); }
-    catch (err) { $('#fehler').textContent = err.message; $('#info').textContent = ''; }
-  };
+  if (!lies('sitzung')) { zeigeLogin(); return; }
+  const wache = setTimeout(() => ladeProblem('Das Laden dauert ungewöhnlich lange …'), 12000);
+  try {
+    if (await sitzungWiederherstellen()) { clearTimeout(wache); starteApp(); return; }
+    clearTimeout(wache); zeigeLogin();
+  } catch (e) { clearTimeout(wache); ladeProblem(e.message); }
 }
 function starteApp() {
-  $('#login').style.display = 'none'; $('#app').hidden = false;
+  $('#lade').style.display = 'none'; $('#login').style.display = 'none'; $('#app').hidden = false;
   const jahre = st.man.jahre.map(j => j.jahr); st.jahr = jahre.includes(lies('jahr')) ? lies('jahr') : jahre[0];
   zeichneJahre(); zeichneListe();
   meld(`${st.man.statistik.module} Module · ${st.man.statistik.dateien} PDFs · Stand ${st.man.erstellt.replace('T', ' ').slice(0, 16)}`);
 }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-start().catch(e => { $('#login').style.display = 'flex'; $('#fehler').textContent = e.message; });
+start().catch(e => zeigeLogin(e.message));
 </script>
 </body>
 </html>
