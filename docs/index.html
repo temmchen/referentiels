@@ -51,7 +51,7 @@ mark{background:#6B5300;color:#FFF3C4;border-radius:3px}
 </style>
 </head>
 <body>
-<div id="lade"><div><div class="logo" style="margin:0 auto 12px">R</div><div id="lade-text">Référentiels wird geladen …</div><div id="lade-knoepfe" hidden><button class="btn p" id="lade-neu" type="button">Neu laden</button> <button class="btn" id="lade-ab" type="button">Abmelden</button></div></div></div>
+<div id="lade"><div><div class="logo" style="margin:0 auto 12px">R</div><div id="lade-text">Référentiels wird geladen …</div><div class="hinweis">Fassung 09.10.2026 c</div><div id="lade-knoepfe" hidden><button class="btn p" id="lade-neu" type="button">Neu laden</button> <button class="btn" id="lade-ab" type="button">Abmelden</button></div></div></div>
 <div id="login">
   <form id="form" autocomplete="on">
     <h1>Référentiels</h1>
@@ -106,8 +106,11 @@ const meld = (t, ms = 3500) => { const m = $('#meldung'); m.textContent = t; m.c
 class NetzFehler extends Error {}
 // Index und Manifest: Netz mit Zeitlimit, sonst die zuletzt geladene (verschlüsselte) Fassung aus dem Cache.
 // Ohne Netz oder bei hängender Verbindung (iPhone im Funkloch) startet die App so trotzdem.
+let netzLahm = false;   // einmal Zeitlimit überschritten → für diesen Start gleich die gespeicherte Fassung nehmen
+async function ausCache(pfad) { try { const c = await caches.open('rm-daten'); const r = await c.match(pfad); if (r) return r.arrayBuffer(); } catch (e) {} return null; }
 async function holeDatei(pfad) {
-  const ab = new AbortController(); const t = setTimeout(() => ab.abort(), 8000);
+  if (netzLahm) { const d = await ausCache(pfad); if (d) return d; }
+  const ab = new AbortController(); const t = setTimeout(() => { netzLahm = true; ab.abort(); }, 5000);
   try {
     const r = await fetch(frisch(pfad), {cache:'no-store', signal:ab.signal});
     if (!r.ok) throw new Error(pfad + ' fehlt (' + r.status + ')');
@@ -115,7 +118,7 @@ async function holeDatei(pfad) {
     try { const c = await caches.open('rm-daten'); await c.put(pfad, new Response(d)); } catch (e) {}
     return d;
   } catch (e) {
-    try { const c = await caches.open('rm-daten'); const r = await c.match(pfad); if (r) return r.arrayBuffer(); } catch (e2) {}
+    const d = await ausCache(pfad); if (d) return d;
     throw new NetzFehler('Keine Verbindung zum Server – und noch nichts für unterwegs gespeichert.');
   } finally { clearTimeout(t); }
 }
