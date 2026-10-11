@@ -11,7 +11,8 @@ verschlüsselten Tresor für GitHub Pages (docs/vaults). Gleiches Schema wie Das
   docs/vaults/index.json (Klartext): {v, portal, erstellt, build, kdf, principals, vaults}
 
 Unveränderte PDFs behalten ihre fid (Zuordnung sha1 → fid in .build-state.json), so bleibt der Offline-Cache
-am Handy gültig und die Git-Historie klein. Aufruf: /usr/bin/python3 build.py [--quelle <KI/Referentiels>]
+am Handy gültig und die Git-Historie klein. Seit 11.10.2026 steht im Manifest auch der Zeitplan (Gantt) je Schuljahr
+(zeitplan.py der Quelle), und web/zeitplan.js + web/zeitplan.css der Kachel werden nach docs/ kopiert. Aufruf: /usr/bin/python3 build.py [--quelle <KI/Referentiels>]
 [--neu-verschluesseln]. Geheimnisse: zugangsdaten.json und .build-state.json sind Verknüpfungen nach
 _Portal-Setup/geheim/Referentiels-… (gitignored).
 """
@@ -97,6 +98,38 @@ def index_holen(quelle):
     return idx, hinweise
 
 
+def zeitplan_holen(quelle, idx):
+    """Zeitplan je Schuljahr (zeitplan.py der Kachel) – {jahr: {...}}; Fehler je Jahr nur melden."""
+    out = {}
+    try:
+        import referentiels as RF  # noqa: E402  (index_holen hat die Quelle in sys.path gelegt)
+        import zeitplan as ZP  # noqa: E402
+    except ImportError as e:
+        print("  Zeitplan: zeitplan.py fehlt in der Quelle (%s) – Mobil ohne Zeitplan." % e)
+        return out
+    cfg = RF.config_lesen(str(quelle / "config.json"))
+    for j in idx["jahre"]:
+        try:
+            out[j["jahr"]] = ZP.zeitplan(cfg, idx, j["jahr"], RF.pfad_aufloesen)
+        except Exception as e:  # noqa: BLE001
+            print("  Zeitplan %s: %s: %s" % (j["jahr"], type(e).__name__, e))
+    print("  Zeitplan: %d Schuljahre" % len(out))
+    return out
+
+
+def gemeinsam_kopieren(quelle):
+    """web/zeitplan.js und web/zeitplan.css der Kachel nach docs/ (nur bei Änderung schreiben)."""
+    for name in ("zeitplan.js", "zeitplan.css"):
+        q = quelle / "web" / name
+        if not q.is_file():
+            continue
+        inhalt = q.read_bytes()
+        ziel = DOCS / name
+        if not ziel.is_file() or ziel.read_bytes() != inhalt:
+            ziel.write_bytes(inhalt)
+            print("  %s aus der Kachel übernommen" % name)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quelle", default=None)
@@ -120,6 +153,8 @@ def main():
     idx, hinweise = index_holen(quelle)
     for h in hinweise:
         print("  Hinweis:", h)
+    zeitplaene = zeitplan_holen(quelle, idx)
+    gemeinsam_kopieren(quelle)
 
     vdir = VAULTS / vid
     fdir = vdir / "f"
@@ -156,9 +191,16 @@ def main():
                         fid = eintrag["fid"]
                         wieder += 1
                     else:
+                        try:
+                            with open(pfad, "rb") as f:
+                                klar = f.read()
+                        except OSError as e:
+                            # OneDrive gibt Dateien „nur online“ manchmal nicht heraus (Errno 60) – überspringen statt abbrechen
+                            print("  übersprungen (nicht lesbar: %s): %s" % (e.strerror or e, nfc(d["name"])))
+                            uebersprungen += 1
+                            mm["dateien"].append({"typ": d["typ"], "name": nfc(d["name"]), "groesse": groesse, "hinweis": "gerade nicht lesbar (OneDrive)"})
+                            continue
                         fid = secrets.token_hex(12)
-                        with open(pfad, "rb") as f:
-                            klar = f.read()
                         (fdir / (fid + ".enc")).write_bytes(verschluessele(K, klar))
                         st["dateien"][sha] = {"fid": fid, "groesse": groesse}
                         neu += 1
@@ -177,7 +219,7 @@ def main():
         del st["dateien"][sha]
     jetzt = datetime.datetime.now().replace(microsecond=0).isoformat()
     anzahl = sum(1 for j in manifest_jahre for k in j["klassen"] for m in k["module"] for d in m["dateien"] if d.get("fid"))
-    manifest = {"v": 1, "portal": "Référentiels", "erstellt": jetzt, "build": st["build"], "jahre": manifest_jahre,
+    manifest = {"v": 1, "portal": "Référentiels", "erstellt": jetzt, "build": st["build"], "jahre": manifest_jahre, "zeitplan": zeitplaene,
                 "statistik": {"dateien": anzahl, "jahre": len(manifest_jahre), "module": sum(len(k["module"]) for j in manifest_jahre for k in j["klassen"])}}
     (vdir / "m.enc").write_bytes(verschluessele(K, json.dumps(manifest, ensure_ascii=False).encode("utf-8")))
     # Zugänge

@@ -53,10 +53,16 @@ def inventar():
             inv[str(p)] = [s.st_size, int(s.st_mtime)]
         except OSError:
             pass
-    for name in ("config.json", "referentiels.py"):
+    for name in ("config.json", "referentiels.py", "zeitplan.py", "daten/fortschritt.json", "web/zeitplan.js", "web/zeitplan.css"):
         merke(q / name)
     for p in (q / "daten" / "zusammenfassungen").glob("*.json"):
         merke(p)
+    # Zeitplan: Stundenplan, Ferien und Klassen des Journal de Classe (ändern Stunden und Fenster)
+    journal = Path(os.path.normpath(str(q / ((lade(q / "config.json", {}) or {}).get("journal") or "../Journal de Classe"))))
+    merke(journal / "config.json")
+    for p in sorted(journal.glob("20??-20??")):
+        merke(p / "stundenplan.json")
+        merke(p / "ferien.json")
     sys.path.insert(0, str(q))
     try:
         import referentiels as RF  # noqa: E402
@@ -135,6 +141,8 @@ def main():
         print("✅ Fertig – veröffentlicht (%d Dateien, davon %d neu)." % (len(status.splitlines()), n))
     else:
         print("✅ Fertig – keine Änderung im Repo.")
+    # nach dem Bau neu erfassen: build.py kopiert zeitplan.js/.css nach docs/ (sonst meldet --pruefen gleich wieder OFFEN)
+    inv = inventar()
     with io.open(STAND, "w", encoding="utf-8") as f:
         json.dump({"zeit": time.strftime("%Y-%m-%d %H:%M:%S"), "inventar": inv}, f, ensure_ascii=False)
 
