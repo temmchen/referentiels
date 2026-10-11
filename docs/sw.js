@@ -6,9 +6,9 @@
    - Index und Manifest (vaults/index.json, m.enc): nicht abgefangen – die Seite holt sie selbst mit Zeitlimit und legt
      sie in „rm-daten“ ab.
    Nur eigene Caches („rm-…“): alle Portale teilen sich die Domain temmchen.github.io. */
-const CACHE = 'rm-v4';
+const CACHE = 'rm-v5';
 const ZEITLIMIT = 3000;
-const HUELLE = ['./', './index.html', './manifest.webmanifest', './lib/pdf.min.mjs', './lib/pdf.worker.min.mjs', './icons/icon-192.png'];
+const HUELLE = ['./', './index.html', './zeitplan.js', './zeitplan.css', './manifest.webmanifest', './lib/pdf.min.mjs', './lib/pdf.worker.min.mjs', './icons/icon-192.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil((async () => {

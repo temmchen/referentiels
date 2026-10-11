@@ -11,9 +11,10 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="zeitplan.css">
 <style>
-:root{--bg:#0F1415;--surface:#161C1D;--surface-2:#1D2526;--surface-3:#283233;--border:#2A3435;--text:#E8EEEE;--text-2:#AEBBBC;--text-3:#7B8A8B;--accent:#2DD4BF;--accent-2:#5EEAD4;--accent-soft:#0F3B36;--accent-fg:#06201D;--warn:#F0A742;--warn-soft:#3A2A10;--danger:#F87171;--ok:#4ADE80;color-scheme:dark}
-@media (prefers-color-scheme: light){:root{--bg:#F3F5F6;--surface:#fff;--surface-2:#EEF2F3;--surface-3:#E2E8EA;--border:#DDE3E6;--text:#13201F;--text-2:#4A5A5B;--text-3:#7E8E8F;--accent:#0F766E;--accent-2:#115E59;--accent-soft:#D9F2EE;--accent-fg:#fff;--warn:#B45309;--warn-soft:#FDF1DC;--danger:#C62828;--ok:#15803D;color-scheme:light}}
+:root{--bg:#0F1415;--surface:#161C1D;--surface-2:#1D2526;--surface-3:#283233;--border:#2A3435;--text:#E8EEEE;--text-2:#AEBBBC;--text-3:#7B8A8B;--accent:#2DD4BF;--accent-2:#5EEAD4;--accent-soft:#0F3B36;--accent-fg:#06201D;--warn:#F0A742;--warn-soft:#3A2A10;--danger:#F87171;--ok:#4ADE80;--ok-soft:#14301F;--danger-soft:#3B1717;--border-strong:#3A4648;--fs-sm:13px;--fs-xs:11.5px;--radius:9px;--radius-lg:12px;color-scheme:dark}
+@media (prefers-color-scheme: light){:root{--bg:#F3F5F6;--surface:#fff;--surface-2:#EEF2F3;--surface-3:#E2E8EA;--border:#DDE3E6;--text:#13201F;--text-2:#4A5A5B;--text-3:#7E8E8F;--accent:#0F766E;--accent-2:#115E59;--accent-soft:#D9F2EE;--accent-fg:#fff;--warn:#B45309;--warn-soft:#FDF1DC;--danger:#C62828;--ok:#15803D;--ok-soft:#DCFCE7;--danger-soft:#FDE8E8;--border-strong:#C3CDD1;color-scheme:light}}
 *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
 button,input{font:inherit;color:inherit}a{color:var(--accent)}
 .kopf{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border);padding:calc(env(safe-area-inset-top) + 10px) 14px 8px;display:flex;flex-direction:column;gap:8px}
@@ -47,11 +48,15 @@ details{margin-top:4px}summary{color:var(--text-3);font-size:12px}details ul{mar
 .viewer .st{color:#aaa;text-align:center;font-size:13px;padding:20px}
 .meldung{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);background:var(--surface-3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;z-index:30;display:none}.meldung.on{display:block}
 mark{background:#6B5300;color:#FFF3C4;border-radius:3px}
+.ansicht{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;flex:none}.ansicht button{border:0;background:var(--surface-2);padding:5px 12px;font-size:13px}.ansicht button.on{background:var(--accent);color:var(--accent-fg);font-weight:600}
+#zeitplan{padding:8px 10px calc(env(safe-area-inset-bottom) + 30px)}#zeitplan .karte{padding:12px 10px}#zeitplan .zp-zeile.zp-kopfzeile,#d-inhalt .zp-zeile.zp-kopfzeile{position:static}
+.zp-legende{margin-left:0!important}.karte .zp-titel h2{font-size:18px;text-transform:none;letter-spacing:0;color:var(--text)}.karte h2 .zp-unter,.karte h2 .zp-stand-inline{text-transform:none;letter-spacing:0}.zp-spur > i{pointer-events:none}.zp-box{padding:6px 8px}.zp-tab{min-width:640px}
+.app-zeitplan #suche,.app-zeitplan #liste{display:none}#zp-klassen,#zeitplan{display:none}.app-zeitplan #zp-klassen{display:flex}.app-zeitplan #zeitplan{display:block}
 .menue{position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 48px);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;flex-direction:column;min-width:220px;z-index:15}.menue.on{display:flex}.menue button{text-align:left;background:none;border:0;border-bottom:1px solid var(--border);padding:11px 14px;font-size:15px}.menue button:last-child{border-bottom:0}
 </style>
 </head>
 <body>
-<div id="lade"><div><div class="logo" style="margin:0 auto 12px">R</div><div id="lade-text">Référentiels wird geladen …</div><div class="hinweis">Fassung 09.10.2026 c</div><div id="lade-knoepfe" hidden><button class="btn p" id="lade-neu" type="button">Neu laden</button> <button class="btn" id="lade-ab" type="button">Abmelden</button></div></div></div>
+<div id="lade"><div><div class="logo" style="margin:0 auto 12px">R</div><div id="lade-text">Référentiels wird geladen …</div><div class="hinweis">Fassung 11.10.2026 (Zeitplan)</div><div id="lade-knoepfe" hidden><button class="btn p" id="lade-neu" type="button">Neu laden</button> <button class="btn" id="lade-ab" type="button">Abmelden</button></div></div></div>
 <div id="login">
   <form id="form" autocomplete="on">
     <h1>Référentiels</h1>
@@ -65,8 +70,9 @@ mark{background:#6B5300;color:#FFF3C4;border-radius:3px}
 </div>
 <div id="app" hidden>
   <div class="kopf">
-    <div class="zeile"><span class="logo">R</span><h1>Référentiels</h1><button class="icon" id="btn-menue" aria-label="Menü">⋯</button></div>
+    <div class="zeile"><span class="logo">R</span><h1>Référentiels</h1><span class="ansicht" id="ansicht"><button data-a="module">Module</button><button data-a="zeitplan">Zeitplan</button></span><button class="icon" id="btn-menue" aria-label="Menü">⋯</button></div>
     <div class="chips" id="jahre"></div>
+    <div class="chips" id="zp-klassen"></div>
     <input id="suche" type="search" placeholder="Modul, Kompetenz, Inhalt …" autocapitalize="off" autocorrect="off">
   </div>
   <div class="menue" id="menue">
@@ -75,10 +81,12 @@ mark{background:#6B5300;color:#FFF3C4;border-radius:3px}
     <button id="m-abmelden">Abmelden</button>
   </div>
   <div class="liste" id="liste"></div>
+  <div id="zeitplan"></div>
   <div class="detail" id="detail"><div class="kopf"><div class="zeile"><button class="icon" id="btn-zurueck">‹ Zurück</button><h1 id="d-titel" style="font-size:15px"></h1></div></div><div class="inhalt" id="d-inhalt"></div></div>
   <div class="viewer" id="viewer"><div class="leiste"><button class="icon" id="v-zu">Schließen</button><span class="t" id="v-titel"></span><button class="icon" id="v-teilen">Teilen</button></div><div class="seiten" id="v-seiten"></div></div>
 </div>
 <div class="meldung" id="meldung"></div>
+<script src="zeitplan.js"></script>
 <script type="module">
 /* Référentiels Mobil – Oberfläche. Krypto wie build.py: Passwort NFC+trim+lower → PBKDF2-SHA256 (iter aus index.json)
    → KEK → entwickelt den Tresorschlüssel K → Manifest und PDFs = 12-B-Nonce || AES-256-GCM. Sitzung (K) in localStorage
@@ -98,7 +106,7 @@ async function entschluesseleJSON(key, ivB64, ctB64) { const k = await crypto.su
 const importK = kB64 => crypto.subtle.importKey('raw', b64zu(kB64), {name:'AES-GCM'}, false, ['decrypt']);
 async function entschluesseleBlock(key, puffer) { const b = new Uint8Array(puffer); if (b.length < 13) throw new Error('Datei beschädigt'); return crypto.subtle.decrypt({name:'AES-GCM', iv:b.slice(0, 12)}, key, b.slice(12)); }
 
-const st = { idx:null, kB64:null, key:null, vid:null, man:null, jahr:null, q:'', label:'' };
+const st = { idx:null, kB64:null, key:null, vid:null, man:null, jahr:null, q:'', label:'', ansicht:'module' };
 const merk = (k, v) => { try { localStorage.setItem('rm_' + k, v); } catch (e) {} };
 const lies = k => { try { return localStorage.getItem('rm_' + k); } catch (e) { return null; } };
 const meld = (t, ms = 3500) => { const m = $('#meldung'); m.textContent = t; m.classList.add('on'); clearTimeout(meld.t); meld.t = setTimeout(() => m.classList.remove('on'), ms); };
@@ -158,7 +166,7 @@ function passt(m, q) {
 function mark(t) { const q = st.q.trim(); if (!q) return esc(t); const w = q.split(/\s+/).filter(Boolean).map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')); return esc(t).replace(new RegExp('(' + w.join('|') + ')', 'gi'), '<mark>$1</mark>'); }
 function zeichneJahre() {
   $('#jahre').innerHTML = (st.man.jahre || []).map(j => `<button class="chip${j.jahr === st.jahr ? ' on' : ''}" data-j="${esc(j.jahr)}">${esc(j.jahr)}</button>`).join('');
-  $('#jahre').querySelectorAll('.chip').forEach(b => b.onclick = () => { st.jahr = b.dataset.j; merk('jahr', st.jahr); zeichneJahre(); zeichneListe(); });
+  $('#jahre').querySelectorAll('.chip').forEach(b => b.onclick = () => { st.jahr = b.dataset.j; merk('jahr', st.jahr); zeichneJahre(); zeichneHaupt(); });
 }
 function kennzahl(m) { if (m.vorlage) return `wie ${esc(m.vorlage.vorlage_klasse)} ${esc(m.vorlage.vorlage_modul)}`; if (m.kompetenzen && m.kompetenzen.length) return `${m.anzahl} K · ${m.punkte} P`; if (m.lerneinheiten && m.lerneinheiten.length) return `${m.lerneinheiten.length} LE`; return m.dateien && m.dateien.length ? 'PDF' : 'kein PDF'; }
 function zeichneListe() {
@@ -184,10 +192,38 @@ function zeigeDetail(klasse, modul) {
   const ls = L.length ? `<div class="karte"><h2>Lernsituationen <span class="badge">${L.length}</span><span class="r">${[o.wochen ? o.wochen + ' Wo' : '', o.stunden ? o.stunden + ' h' : ''].filter(Boolean).join(' · ')}</span></h2>${L.map(l => `<div class="ls"><b>${l.nr}. ${mark(l.titel)}</b><div class="be">${mark(l.beschreibung)}</div><div class="meta">${l.richtzeit != null ? l.richtzeit + ' h' : ''}${l.kompetenzen ? ' · ' + esc(l.kompetenzen) : ''}</div>${l.inhalte && l.inhalte.length ? `<details><summary>${l.inhalte.length} Inhalte</summary><ul>${l.inhalte.map(i => `<li>${mark(i)}</li>`).join('')}</ul></details>` : ''}</div>`).join('')}</div>` : '';
   const E = m.lerneinheiten || [];
   const le = E.length ? `<div class="karte"><h2>Lerneinheiten <span class="badge">${E.length}</span></h2>${E.map(l => `<div class="ls"><b>${l.nr}. ${mark(l.titel)}</b>${l.lernziele && l.lernziele.length ? `<ul style="margin:4px 0 0;padding-left:18px;font-size:13px;color:var(--text-2)">${l.lernziele.map(z => `<li>${mark(z)}</li>`).join('')}</ul>` : ''}</div>`).join('')}</div>` : '';
-  $('#d-inhalt').innerHTML = hinweis + `<div class="karte mk"><div class="code">${esc(t.m.modul)}</div><div class="kl">${esc(k.klasse)} · ${esc(j.jahr)}</div><div class="ti">${mark(m.titel || '')}</div><div class="fakten">${fakten}</div><div class="pdfs">${pdfs || '<div class="hinweis">Kein PDF abgelegt.</div>'}</div></div>` + komp + ls + le;
+  $('#d-inhalt').innerHTML = hinweis + `<div class="karte mk"><div class="code">${esc(t.m.modul)}</div><div class="kl">${esc(k.klasse)} · ${esc(j.jahr)}</div><div class="ti">${mark(m.titel || '')}</div><div class="fakten">${fakten}</div><div class="pdfs">${pdfs || '<div class="hinweis">Kein PDF abgelegt.</div>'}</div></div><div id="zp-modul"></div>` + komp + ls + le;
   $('#d-inhalt').querySelectorAll('[data-fid]').forEach(b => b.onclick = () => oeffnePdf(b.dataset.fid, b.dataset.name));
   $('#detail').classList.add('on'); $('#detail').scrollTop = 0; history.pushState({d:1}, '');
+  modulZeitplan(k.klasse, t.m.modul);
 }
+
+// ------------------------------------------------------------ Zeitplan (Gantt, gemeinsamer Code: zeitplan.js aus der Kachel)
+// Daten im entschlüsselten Manifest (st.man.zeitplan[jahr]); Ist-Stand wird am Mac gesetzt und hier nur angezeigt.
+const RFZ = window.RFZ;
+const zpOpts = { neu: () => zeichneZeitplan(), zumModul: (k, m) => zeigeDetail(k, m) };
+function zeichneHaupt() { if (st.ansicht === 'zeitplan') zeichneZeitplan(); else zeichneListe(); }
+function ansichtSetzen(a) {
+  st.ansicht = a === 'zeitplan' && RFZ ? 'zeitplan' : 'module'; merk('ansicht', st.ansicht);
+  document.querySelectorAll('#ansicht button').forEach(b => b.classList.toggle('on', b.dataset.a === st.ansicht));
+  $('#app').classList.toggle('app-zeitplan', st.ansicht === 'zeitplan');
+  zeichneHaupt(); window.scrollTo(0, 0);
+}
+async function zeichneZeitplan() {
+  let d = null; try { d = await RFZ.laden(st.jahr); } catch (e) {}
+  if (!d) { $('#zp-klassen').innerHTML = ''; $('#zeitplan').innerHTML = `<div class="hinweis" style="padding:20px;text-align:center">Für ${esc(st.jahr)} gibt es keinen Zeitplan${st.man.zeitplan ? '' : ' (am Mac „Mobil veröffentlichen“, dann hier neu laden)'}.</div>`; return; }
+  const aus = d.klassen.some(k => k.klasse === RFZ.auswahl()) ? RFZ.auswahl() : '';
+  if (!aus) RFZ.waehle('');
+  $('#zp-klassen').innerHTML = `<button class="chip${!aus ? ' on' : ''}" data-zk="">Alle Klassen</button>` + d.klassen.map(k => `<button class="chip${aus === k.klasse ? ' on' : ''}" data-zk="${esc(k.klasse)}"><span class="punkt" style="background:${esc(k.farbe || 'var(--text-3)')}"></span>${esc(k.klasse)}</button>`).join('');
+  $('#zp-klassen').querySelectorAll('[data-zk]').forEach(b => b.onclick = () => { RFZ.waehle(b.dataset.zk); zeichneZeitplan(); window.scrollTo(0, 0); });
+  RFZ.detail($('#zeitplan'), d, zpOpts);
+  const on = $('#zp-klassen .chip.on'); if (on && on.scrollIntoView) on.scrollIntoView({block:'nearest', inline:'center'});
+}
+async function modulZeitplan(klasse, modul) {
+  const el = $('#zp-modul'); if (!el || !RFZ) { if (el) el.remove(); return; }
+  try { const d = await RFZ.laden(st.jahr); if (!RFZ.modulKarte(el, d, klasse, modul, zpOpts)) el.remove(); } catch (e) { el.remove(); }
+}
+document.querySelectorAll('#ansicht button').forEach(b => b.onclick = () => ansichtSetzen(b.dataset.a));
 function detailZu() { $('#detail').classList.remove('on'); }
 
 // ------------------------------------------------------------ PDFs
@@ -299,7 +335,8 @@ async function start() {
 function starteApp() {
   $('#lade').style.display = 'none'; $('#login').style.display = 'none'; $('#app').hidden = false;
   const jahre = st.man.jahre.map(j => j.jahr); st.jahr = jahre.includes(lies('jahr')) ? lies('jahr') : jahre[0];
-  zeichneJahre(); zeichneListe();
+  if (RFZ) RFZ.setze({ quelle: jahr => (st.man.zeitplan || {})[jahr], nurLesen: true });
+  zeichneJahre(); ansichtSetzen(lies('ansicht') === 'zeitplan' ? 'zeitplan' : 'module');
   meld(`${st.man.statistik.module} Module · ${st.man.statistik.dateien} PDFs · Stand ${st.man.erstellt.replace('T', ' ').slice(0, 16)}`);
 }
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
