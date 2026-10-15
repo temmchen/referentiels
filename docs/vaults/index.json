@@ -1,8 +1,8 @@
 {
  "v": 2,
  "portal": "Référentiels",
- "erstellt": "2026-10-15T13:29:17",
- "build": 53,
+ "erstellt": "2026-10-15T13:53:30",
+ "build": 54,
  "kdf": {
   "typ": "PBKDF2-SHA256",
   "iter": 600000,
@@ -21,8 +21,8 @@
    "manifest": "vaults/0a17add145e97535/m.enc",
    "wraps": [
     {
-     "iv": "KERZApneleKfjHaK",
-     "ct": "TawYtmX6aAO0FdWNyhrr3PYX/WJHgbzyd0NRmlVMYUPAjNKYjnedURtKNqOParTOLXbrbaCo9wlan/soSeYSg+1yp9Ur93q1cch84UdtBaYPCkoQX/P1L1g3O8NhvAzuEGwmpqW97Q==",
+     "iv": "q8XnXa0CzGigU9je",
+     "ct": "p8b2B0uA8WzXXBN54eB5RpzpydV5ZAxeHwUX2m+SGWykA/qUxaBQbIYtHSFa/CK8Hk8C1e1gyLMbTbjT5tkctUz972ZTZMSxFRpP4TUmQqhsGDguVEr9uM7NpC1CAxC8ga6H+GVGsA==",
      "p": "p0"
     }
    ]
